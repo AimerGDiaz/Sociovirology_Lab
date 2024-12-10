@@ -74,6 +74,10 @@ between the two viral strains as well with the combinatory treatment
 exploring the relationships between TuMV genetics and their growth
 impact on N. benthamiana
 
+# Results
+
+## Relative fresh weight
+
 ``` r
 # Loading Fresh Weigth Data
   TuMV_FW <- read.csv("Data/BI1293_FW_Relative.csv", sep = "\t", header = T)
@@ -117,8 +121,36 @@ ggsave(device = svg, "Results/FreshWeight_TuMV.svg", plot = TuMV_FW_plot_sig,  w
     ## No summary function supplied, defaulting to `mean_se()`
     ## No summary function supplied, defaulting to `mean_se()`
 
-Why is it called
+Why is the lab called
 [Sociovirology](https://www.quantamagazine.org/viruses-finally-reveal-their-complex-social-life-20240411/)
+?
+
+## GFP and Viral titers
+
+``` r
+qPCRs_raw <-  read.table( "Data/Nb_TuMV_GFP_CP_6K2.csv", sep = ",", header = T)
+qPCRs_fil <- qPCRs_raw[qPCRs_raw$Cq != "N/A",] 
+qPCRs_fil$Cq <- as.numeric(qPCRs_fil$Cq)
+qPCRs_fil_avg <- ddply(qPCRs_fil, .(Primer, Genotype,Replicate), summarize, Avg_Ct = mean(Cq) )
+qPCRs_PP2A <- qPCRs_fil_avg[qPCRs_fil_avg$Primer =="PP2A",]
+qPCRs_Target <- qPCRs_fil_avg[qPCRs_fil_avg$Primer !="PP2A",]
+
+qPCRs_DCt <- merge(x = qPCRs_PP2A , y = qPCRs_Target, by =c("Genotype","Replicate"))
+qPCRs_DCt$DCt <- qPCRs_DCt$Avg_Ct.y - qPCRs_DCt$Avg_Ct.x                    
+
+qPCRs_DCt$log2DDCt <- 2^(- qPCRs_DCt$DCt )
+ TuMV_titters <- ggplot(qPCRs_DCt, aes(x = Primer.y, y = log2DDCt, fill = Genotype , group =  Genotype)) +
+  #geom_boxplot(outlier.shape = NA , position=position_dodge(width=0.9), alpha = 0.9) +
+     geom_bar(position = position_dodge(width = 0.9), stat = 'summary', fun.data = mean_se, alpha = 0.6) +
+geom_errorbar(position = position_dodge(width = 0.9),
+                stat = 'summary', fun.data = mean_se, width = 0.4) + facet_wrap(~ Primer.y , scales = "free")  + 
+   ylab("Relative expression to PP2A")   +  xlab("Gene expressed") +
+   geom_point(position = position_dodge(width = 0.9), alpha = 0.5, size = 0.8, color = "grey20" ) + theme_classic(base_size = 14) +
+   theme(axis.text.x = element_text(angle = 90,size = 14)) 
+ TuMV_titters
+```
+
+![](Readme_files/figure-gfm/unnamed-chunk-3-1.png)<!-- -->
 
 # References
 
