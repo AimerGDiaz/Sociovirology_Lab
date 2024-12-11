@@ -95,7 +95,7 @@ impact on N. benthamiana
      geom_bar(position = position_dodge(width = 0.9), stat = 'summary' ) +
   geom_errorbar(position = position_dodge(width = 0.9),stat = 'summary', width = 0.4,alpha = 0.5) + 
   geom_jitter( stat = 'identity', shape = 16, position = position_jitterdodge(0.15), size = 0.8, alpha = 0.5, color = "grey20") +
-  labs(title = "Disease severity in fresh weight loss of 21dpi Plants", y = "Relative Fresh weight (mg)", x = "Agroinfiltration construct" ) +
+  labs(title = "Disease severity in fresh weight loss of 15dpi Plants", y = "Relative Fresh weight (mg)", x = "Agroinfiltration construct" ) +
    scale_fill_manual(values = colors) +  theme_classic(base_size = 14) +
 theme(axis.text.x = element_text(angle = 90), legend.position = "bottom", plot.title = element_text(hjust = 0.5))
 
@@ -104,7 +104,8 @@ comparisons <- list(
 c( "Mock", "Hcpro"),
 c("Mock","GFP"),
 c( "Mock","6K2"),
-c("Mock","HCproX6K2"))
+c("Mock","HCproX6K2"),
+c("6K2","HCproX6K2"))
 
 TuMV_FW_plot_sig <-   TuMV_FW_plot +   stat_compare_means(comparisons = comparisons,  method = "t.test", label = "p.signif")
 TuMV_FW_plot_sig
