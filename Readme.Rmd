@@ -48,17 +48,16 @@ We will then determine disease symptoms by evaluating at 15 days post-infection 
 ## Relative fresh weight 
 
 ```{r}
-# Loading Fresh Weigth Data
-  TuMV_FW <- read.csv("Data/BI1293_FW_Relative.csv", sep = "\t", header = T)
-  TuMV_FW$Construct <- factor(TuMV_FW$Construct, levels = c("GFP", "Hcpro","6K2", "HCproX6K2"))
+  TuMV_FW <- read.csv("Data/BI1293_FW_Relative.csv", sep = ",", header = T)
+  TuMV_FW$Construct <- factor(TuMV_FW$Construct, levels = c("Mock","GFP", "Hcpro","6K2", "HCproX6K2"))
   
 # Average per contruct
   average_weights <- ddply(TuMV_FW, .(Construct), summarize, Avg_Weight = mean(FW.g.))  
-  average_weights_control <- subset(average_weights, Construct == "GFP")
+    average_weights_control <- subset(average_weights, Construct == "Mock")
 # Relative weigth to GFP average
   TuMV_FW$Relative_Weight <- TuMV_FW$FW.g. / average_weights_control$Avg_Weight
   
-  colors <- c( "6K2" = "#67001F",  "HCproX6K2" = "#CE1256", "Hcpro" = "#DF65B0" , "GFP" = "#C994C7")
+  colors <- c( "6K2" = "#67001F",  "HCproX6K2" = "#CE1256", "Hcpro" = "#DF65B0" , "GFP" = "#C994C7", "Mock" = "black")
 
 # Plot
   TuMV_FW_plot <- ggplot(TuMV_FW, aes(x=Construct, y=Relative_Weight,fill = Construct)) +
@@ -71,9 +70,11 @@ theme(axis.text.x = element_text(angle = 90), legend.position = "bottom", plot.t
 
 # Adding signifance test
 comparisons <- list(
-c( "Hcpro","GFP"),
-c( "Hcpro","6K2"),
-c("Hcpro","HCproX6K2"))
+c( "Mock", "Hcpro"),
+c("Mock","GFP"),
+c( "Mock","6K2"),
+c("Mock","HCproX6K2"))
+
 TuMV_FW_plot_sig <-   TuMV_FW_plot +   stat_compare_means(comparisons = comparisons,  method = "t.test", label = "p.signif")
 TuMV_FW_plot_sig
 
