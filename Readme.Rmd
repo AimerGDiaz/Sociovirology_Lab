@@ -14,6 +14,19 @@ library(ggplot2, quietly = F)
 library(plyr, quietly = F)
 library(ggplot2, quietly = F)
 library(ggpubr, quietly = F)
+library(ggrepel, quietly = T)
+
+
+mgsub <- function(pattern, replacement, x, ...) {
+  if (length(pattern)!=length(replacement)) {
+    stop("pattern and replacement do not have the same length.")
+  }
+  result <- x
+  for (i in 1:length(pattern)) {
+    result <- gsub(fixed = T,pattern[i], replacement[i], result, ...)
+  }
+  result
+}
 ```
 
 # Introduction
@@ -83,7 +96,7 @@ ggsave(device = svg, "Results/FreshWeight_TuMV.svg", plot = TuMV_FW_plot_sig,  w
 ```
 Why is the lab called [Sociovirology](https://www.quantamagazine.org/viruses-finally-reveal-their-complex-social-life-20240411/) ?
 
-## GFP and Viral titers 
+## GFP and Viral titers preliminar analysis 
 
 ```{r}
 qPCRs_raw <-  read.table( "Data/Nb_TuMV_GFP_CP_6K2.csv", sep = ",", header = T)
@@ -96,9 +109,10 @@ qPCRs_Target <- qPCRs_fil_avg[qPCRs_fil_avg$Primer !="PP2A",]
 qPCRs_DCt <- merge(x = qPCRs_PP2A , y = qPCRs_Target, by =c("Genotype","Replicate"))
 qPCRs_DCt$DCt <- qPCRs_DCt$Avg_Ct.y - qPCRs_DCt$Avg_Ct.x                    
 
-qPCRs_DCt$log2DDCt <- 2^(- qPCRs_DCt$DCt )
- TuMV_titters <- ggplot(qPCRs_DCt, aes(x = Primer.y, y = log2DDCt, fill = Genotype , group =  Genotype)) +
-  #geom_boxplot(outlier.shape = NA , position=position_dodge(width=0.9), alpha = 0.9) +
+qPCRs_DCt$log2DDCt <- 2^-( qPCRs_DCt$DCt )
+
+qPCRs_DCt$Primer.y <- factor(qPCRs_DCt$Primer.y , levels = c("GFP","6K2-GFP","TuMV CP"))
+ TuMV_titters <- ggplot(qPCRs_DCt, aes(x = Genotype, y = log2DDCt, fill = Genotype , group =  Genotype)) +
      geom_bar(position = position_dodge(width = 0.9), stat = 'summary', fun.data = mean_se, alpha = 0.6) +
 geom_errorbar(position = position_dodge(width = 0.9),
                 stat = 'summary', fun.data = mean_se, width = 0.4) + facet_wrap(~ Primer.y , scales = "free")  + 
@@ -107,5 +121,61 @@ geom_errorbar(position = position_dodge(width = 0.9),
    theme(axis.text.x = element_text(angle = 90,size = 14)) 
  TuMV_titters
 ```
+## Lab practice 2024: GFP and Viral titers 
+
+```{r}
+qPCRs_raw <-  read.table( "Data/All_Results.csv", sep = "\t", header = T)
+  
+qPCRs_fil_avg <- ddply(qPCRs_raw, .(Primer, Construct,Sample_Group), summarize, Avg_Ct = mean(CQ) )
+
+
+qPCRs_PP2A <- qPCRs_fil_avg[qPCRs_fil_avg$Primer =="PP2A",]
+qPCRs_Target <- qPCRs_fil_avg[qPCRs_fil_avg$Primer !="PP2A",]
+
+qPCRs_DCt <- merge(x = qPCRs_PP2A , y = qPCRs_Target, by =c("Construct","Sample_Group"))
+
+qPCRs_DCt$DCt <- qPCRs_DCt$Avg_Ct.y - qPCRs_DCt$Avg_Ct.x                    
+
+qPCRs_DCt$RelExpr <- 2^-( qPCRs_DCt$DCt )
+
+qPCRs_DCt$Primer.y  <- mgsub(pattern = c("6K2","CP"), replacement = c("6K2-GFP","TuMV-CP"), x = qPCRs_DCt$Primer.y )
+qPCRs_DCt$Construct <- gsub(pattern = "HX6", "6K2xDHC", qPCRs_DCt$Construct)
+
+qPCRs_DCt$Construct <- factor(qPCRs_DCt$Construct , levels = c("GFP","HCPro","6K2","6K2xDHC"))
+qPCRs_DCt$Primer.y <- factor(qPCRs_DCt$Primer.y , levels = c("GFP","6K2-GFP","TuMV-CP"))
+
+#TuMV_RE <- ggplot(qPCRs_DCt, aes(x = Construct, y = RelExpr, fill = Construct , group =  Construct)) +
+TuMV_RE <- ggplot(qPCRs_DCt[!grepl("FEM|ERV|5",qPCRs_DCt$Sample_Group),], aes(x = Construct, y = RelExpr, fill = Construct , group =  Construct)) +
+#TuMV_RE <- ggplot(qPCRs_DCt[grepl("_TA",qPCRs_DCt$Sample_Group),], aes(x = Construct, y = RelExpr, fill = Construct , group =  Construct)) +
+     geom_bar(position = position_dodge(width = 0.9), stat = 'summary', fun.data = mean_se, alpha = 0.6) +
+geom_errorbar(position = position_dodge(width = 0.9),
+                stat = 'summary', fun.data = mean_se, width = 0.4) + facet_wrap(~ Primer.y , scales = "free")  + 
+   ylab("Relative expression to PP2A")   +  xlab("Plant agroinfiltrated") +
+   geom_text_repel( color ="red",
+             aes(label = Sample_Group,  hjust = -0.05, vjust = -0.05)) +
+   geom_point(position = position_dodge(width = 0.9), alpha = 0.5, size = 0.8, color = "grey20" ) + theme_classic(base_size = 14) +
+   theme(axis.text.x = element_text(angle = 90,size = 14), legend.title = element_blank(),legend.position = "none") 
+```
+<!--
+ qPCRs_DCt_Ctrl <-  ddply(qPCRs_DCt[qPCRs_DCt$Primer.y == "GFP",], .(Sample_Group,Primer.y), summarize, Avg_DCt = mean(DCt) )
+qPCRs_DDCt <-  merge(qPCRs_DCt, qPCRs_DCt_Ctrl,  by = c( "Sample_Group"))
+qPCRs_DDCt$log2DDCt <- 2^-(qPCRs_DDCt$DCt -qPCRs_DDCt$Avg_DCt)
+#factor(qPCRs_DDCt$Sample_Group )
+#  ggplot(qPCRs_DDCt[qPCRs_DDCt$Sample_Group != "6K2_5" & qPCRs_DDCt$Sample_Group != "6K2_4",], 
+#ggplot(qPCRs_DDCt, 
+#ggplot(qPCRs_DDCt[!grepl("TA", qPCRs_DDCt$Sample_Group ),], 
+       ggplot(qPCRs_DDCt[grepl("_4", qPCRs_DDCt$Sample_Group ),], 
+#ggplot(qPCRs_DDCt[grepl("_TA", qPCRs_DDCt$Sample_Group ),], 
+          aes(x = Construct, y = log2DDCt, fill = Construct , group =  Construct)) +
+     geom_bar(position = position_dodge(width = 0.9), stat = 'summary', fun.data = mean_se, alpha = 0.6) +
+geom_errorbar(position = position_dodge(width = 0.9),
+                stat = 'summary', fun.data = mean_se, width = 0.4) + facet_wrap(~ Primer.y.x , scales = "free")  + 
+   ylab("Relative expression to PP2A")   +  xlab("Construct") +
+     geom_text_repel( color ="red",
+             aes(label = Sample_Group,  hjust = -0.05, vjust = -0.05)) +
+   geom_point(position = position_dodge(width = 0.9), alpha = 0.5, size = 0.8, color = "grey20" ) + theme_classic(base_size = 14) +
+   theme(axis.text.x = element_text(angle = 90,size = 14)) 
+```
+-->
 
 # References
