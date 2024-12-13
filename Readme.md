@@ -254,14 +254,18 @@ TuMV_RE_CP
 
 ![](Readme_files/figure-gfm/unnamed-chunk-4-4.png)<!-- -->
 
-<!-- 
+## Delta delta Cq using GFP as reference
+
+``` r
  qPCRs_DCt_Ctrl <-  ddply(qPCRs_DCt[qPCRs_DCt$Primer.y == "GFP",], .(Sample_Group,Primer.y), summarize, Avg_DCt = mean(DCt) )
 qPCRs_DDCt <-  merge(qPCRs_DCt, qPCRs_DCt_Ctrl,  by = c( "Sample_Group"))
 qPCRs_DDCt$log2DDCt <- 2^-(qPCRs_DDCt$DCt -qPCRs_DDCt$Avg_DCt)
 #factor(qPCRs_DDCt$Sample_Group )
 #  ggplot(qPCRs_DDCt[qPCRs_DDCt$Sample_Group != "6K2_5" & qPCRs_DDCt$Sample_Group != "6K2_4",], 
-&#10;#ggplot(qPCRs_DDCt[!grepl("TA", qPCRs_DDCt$Sample_Group ),], 
-       &#10;#ggplot(qPCRs_DDCt[grepl("_TA", qPCRs_DDCt$Sample_Group ),], 
+
+#ggplot(qPCRs_DDCt[!grepl("TA", qPCRs_DDCt$Sample_Group ),], 
+       
+#ggplot(qPCRs_DDCt[grepl("_TA", qPCRs_DDCt$Sample_Group ),], 
 qPCRs_DDCt_plot <- ggplot(qPCRs_DDCt[qPCRs_DDCt$Primer.y.x == "TuMV-CP",],       aes(x = Construct, y =log2(log2DDCt), fill = Construct , group =  Construct)) +
      geom_bar(position = position_dodge(width = 0.9), stat = 'summary', fun.data = mean_se, alpha = 0.6) +
 geom_errorbar(position = position_dodge(width = 0.9),
@@ -271,7 +275,8 @@ geom_errorbar(position = position_dodge(width = 0.9),
              aes(label = Sample_Group,  hjust = -0.05, vjust = -0.05)) +
    geom_point(position = position_dodge(width = 0.9), alpha = 0.5, size = 0.8, color = "grey20" ) + theme_classic(base_size = 14) +
    theme(axis.text.x = element_text(angle = 90,size = 14)) 
-&#10;
+
+
 qPCRs_DDCt_plot_others <- ggplot(qPCRs_DDCt[qPCRs_DDCt$Primer.y.x != "TuMV-CP",],       aes(x = Construct, y =log2DDCt, fill = Construct , group =  Construct)) +
      geom_bar(position = position_dodge(width = 0.9), stat = 'summary', fun.data = mean_se, alpha = 0.6) +
 geom_errorbar(position = position_dodge(width = 0.9),
@@ -281,11 +286,43 @@ geom_errorbar(position = position_dodge(width = 0.9),
              aes(label = Sample_Group,  hjust = -0.05, vjust = -0.05)) +
    geom_point(position = position_dodge(width = 0.9), alpha = 0.5, size = 0.8, color = "grey20" ) + theme_classic(base_size = 14) +
    theme(axis.text.x = element_text(angle = 90,size = 14)) 
-&#10;
+qPCRs_DDCt_plot
+```
+
+![](Readme_files/figure-gfm/unnamed-chunk-5-1.png)<!-- -->
+
+``` r
 ggsave(device = svg, "Results/qPCRs_DDCt_plot.svg", plot = qPCRs_DDCt_plot,  width=10, height=6)
 ggsave(device = svg, "Results/qPCRs_DDCt_others_plot.svg", plot = qPCRs_DDCt_plot_others,  width=10, height=6)
-&#10;```
--->
+```
+
+    ## Warning: ggrepel: 2 unlabeled data points (too many overlaps). Consider
+    ## increasing max.overlaps
+
+# Correlation analysis
+
+``` r
+library("ggstatsplot", quietly = T) 
+```
+
+    ## You can cite this package as:
+    ##      Patil, I. (2021). Visualizations with statistical details: The 'ggstatsplot' approach.
+    ##      Journal of Open Source Software, 6(61), 3167, doi:10.21105/joss.03167
+
+``` r
+GFP_phenotype_expression <-  read.table( "Data/BI1293_GFPperCM_cor.csv", sep = ",", header = T)
+ ggplot(data = GFP_phenotype_expression, aes(x = ΔCQ.GFP, y =  GFP.cm2, colour =Construct, fill = Construct)) + geom_point() +  
+   stat_cor( method = "pearson", digits = 2)+ 
+   theme_classic(base_size = 14) +
+    theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1, size = 10),
+            axis.text.y = element_text(size = 10)) 
+```
+
+![](Readme_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
+
+``` r
+ #ggstatsplot::ggscatterstats(data = GFP_phenotype_expression, x = ΔCQ.GFP, y = GFP.cm2,  bf.message = F)   +   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+```
 
 # References
 

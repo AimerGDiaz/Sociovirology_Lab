@@ -200,7 +200,9 @@ ggsave(device = svg, "Results/TuMV_RE_CP.svg", plot = TuMV_RE_CP,  width=10, hei
 TuMV_RE_CP
 ```
 
-<!-- 
+## Delta delta Cq using GFP as reference
+```{r}
+
  qPCRs_DCt_Ctrl <-  ddply(qPCRs_DCt[qPCRs_DCt$Primer.y == "GFP",], .(Sample_Group,Primer.y), summarize, Avg_DCt = mean(DCt) )
 qPCRs_DDCt <-  merge(qPCRs_DCt, qPCRs_DCt_Ctrl,  by = c( "Sample_Group"))
 qPCRs_DDCt$log2DDCt <- 2^-(qPCRs_DDCt$DCt -qPCRs_DDCt$Avg_DCt)
@@ -230,12 +232,24 @@ geom_errorbar(position = position_dodge(width = 0.9),
              aes(label = Sample_Group,  hjust = -0.05, vjust = -0.05)) +
    geom_point(position = position_dodge(width = 0.9), alpha = 0.5, size = 0.8, color = "grey20" ) + theme_classic(base_size = 14) +
    theme(axis.text.x = element_text(angle = 90,size = 14)) 
-
+qPCRs_DDCt_plot
 
 ggsave(device = svg, "Results/qPCRs_DDCt_plot.svg", plot = qPCRs_DDCt_plot,  width=10, height=6)
 ggsave(device = svg, "Results/qPCRs_DDCt_others_plot.svg", plot = qPCRs_DDCt_plot_others,  width=10, height=6)
 
 ```
--->
+
+# Correlation analysis 
+
+```{r}
+library("ggstatsplot", quietly = T) 
+GFP_phenotype_expression <-  read.table( "Data/BI1293_GFPperCM_cor.csv", sep = ",", header = T)
+ ggplot(data = GFP_phenotype_expression, aes(x = ΔCQ.GFP, y =  GFP.cm2, colour =Construct, fill = Construct)) + geom_point() +  
+   stat_cor( method = "pearson", digits = 2)+ 
+   theme_classic(base_size = 14) +
+    theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1, size = 10),
+            axis.text.y = element_text(size = 10)) 
+ #ggstatsplot::ggscatterstats(data = GFP_phenotype_expression, x = ΔCQ.GFP, y = GFP.cm2,  bf.message = F)   +   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+```
 
 # References

@@ -1,4 +1,14 @@
-﻿Group,Construct,Image,AreaGFP(cm2),GFPInt,GFP/cm2
-Group0,6K2,Group3,25.94,18.65,0.718971631
-Group3,6K2,Group3,31.18,29.16,0.935214881
-Group2,6K2,Group3,35.507,27.081,0.76269468
+﻿#! Note: The Step 13 has been change base on the anomality in the bold area values,,,,,
+"#13.	Once you click on “OK”, then select the image with the red threshold and click into the “Analyze” tab,",,,,,
+"# and click on Measure , a new window will appear called “Results”. Copy the “Area”, and “Mean” intensity per each leaf measured, we will use these values as
+ a proxy of the GFP are (cm2) and mean GFP fluorescence intensity.",,,,,
+Group,Construct,Image,AreaGFP(cm2),GFPInt(mean),GFP/cm2
+Group3,GFP,Group3,0.15,118.44,789.6
+Group3,HCPro,Group3,0.35,118.45,338.4285714
+Group3,HCPx6K2,Group3,1.1,114.14,103.7636364
+Group3,6K2,Group3,0.35,157.79,450.8285714
+Group1,GFP,Group1,121.26,13.97,0.115206993
+Group1,HCPro,Group1,80.07,13.54,0.169102036
+Group1,6k2,Group1,32.58,4.36,0.133824432
+Group1,HCPx6K2,Group1,24.79,19.81,0.799112545
+Group0,6K2,Group4,0.707,121.83,172.3196605
