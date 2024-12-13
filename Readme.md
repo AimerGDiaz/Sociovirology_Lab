@@ -6,6 +6,10 @@ Virus interaction
 
 # Introduction
 
+Why is the lab called
+[Sociovirology](https://www.quantamagazine.org/viruses-finally-reveal-their-complex-social-life-20240411/)
+?
+
 Plant viruses occur globally and have a profound impact on plant
 evolution, population structure, and agricultural practices. As obligate
 biotrophs, these intracellular nanorganisms depend entirely on their
@@ -123,10 +127,6 @@ ggsave(device = svg, "Results/FreshWeight_TuMV.svg", plot = TuMV_FW_plot_sig,  w
     ## No summary function supplied, defaulting to `mean_se()`
     ## No summary function supplied, defaulting to `mean_se()`
 
-Why is the lab called
-[Sociovirology](https://www.quantamagazine.org/viruses-finally-reveal-their-complex-social-life-20240411/)
-?
-
 ## GFP and Viral titers preliminar analysis
 
 ``` r
@@ -153,8 +153,11 @@ geom_errorbar(position = position_dodge(width = 0.9),
  TuMV_titters
 ```
 
-![](Readme_files/figure-gfm/unnamed-chunk-3-1.png)<!-- --> \## Lab
-practice 2024: GFP and Viral titers
+![](Readme_files/figure-gfm/unnamed-chunk-3-1.png)<!-- -->
+
+## Lab practice 2024: GFP and Viral titers
+
+## Delta Cq or PP2A relative expression
 
 ``` r
 qPCRs_raw <-  read.table( "Data/All_Results.csv", sep = "\t", header = T)
@@ -179,7 +182,8 @@ PP2A_CQ
 ggsave(device = svg, "Results/PP2A_CQ.svg", plot = PP2A_CQ,  width=10, height=6)
 qPCRs_avg_sd_fil <- qPCRs_avg_sd[!grepl("6K2_ERV|HX6_FEM|HX6_5",qPCRs_avg_sd$Sample_Group),]
 qPCRs_PP2A_fil <- qPCRs_avg_sd_fil[qPCRs_avg_sd_fil$Primer =="PP2A",]
-PP2A_CQ_fil <-ggplot(qPCRs_PP2A_fil, aes(x = Sample_Group, y = Avg_Ct, fill = Construct , group =  Construct)) +
+
+PP2A_CQ_fil <-ggplot(qPCRs_PP2A_fil, aes(x = Sample_Group, y = CQ, fill = Construct , group =  Construct)) +
      geom_bar(position = position_dodge(width = 0.9), stat = 'summary', fun.data = mean_se, alpha = 0.6) +
 geom_errorbar(position = position_dodge(width = 0.9),
                 stat = 'summary', fun.data = mean_se, width = 0.4) + facet_wrap(~ Construct , scales = "free") + geom_point(position = position_dodge(width = 0.9), alpha = 0.5, size = 0.8, color = "grey20" ) + theme_classic(base_size = 14) 
@@ -193,15 +197,20 @@ ggsave(device = svg, "Results/PP2A_CQ_fil.svg", plot = PP2A_CQ_fil,  width=10, h
 
 qPCRs_Target <- qPCRs_avg_sd_fil[qPCRs_avg_sd_fil$Primer !="PP2A",]
 
-qPCRs_Target_CQ<- ggplot(qPCRs_Target, aes(x = Sample_Group, y = Avg_Ct, fill = Construct , group =  Construct)) +
+qPCRs_Target_CQ<- ggplot(qPCRs_Target, aes(x = Sample_Group, y = CQ, fill = Construct , group =  Construct)) +
      geom_bar(position = position_dodge(width = 0.9), stat = 'summary', fun.data = mean_se, alpha = 0.6) +
 geom_errorbar(position = position_dodge(width = 0.9),
-                stat = 'summary', fun.data = mean_se, width = 0.4) + facet_wrap(~ Construct , scales = "free") 
+                stat = 'summary', fun.data = mean_se, width = 0.4) + facet_wrap(~ Primer , scales = "free") + 
+ theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1, size = 10))
   ggsave(device = svg, "Results/qPCRs_Target_CQ.svg", plot = qPCRs_Target_CQ,  width=10, height=6)
+qPCRs_Target_CQ
+```
 
+![](Readme_files/figure-gfm/unnamed-chunk-4-3.png)<!-- -->
+
+``` r
 qPCRs_fil_avg <- qPCRs_fil_avg[!grepl("6K2_ERV|HX6_FEM|HX6_5",qPCRs_fil_avg$Sample_Group),]
 write.csv(qPCRs_fil_avg, "Results/qPCRs_avg_sd_filtered.csv")
-
 
 qPCRs_fil_PP2A <- qPCRs_fil_avg[qPCRs_fil_avg$Primer =="PP2A",]
 qPCRs_fil_Target <-  qPCRs_fil_avg[qPCRs_fil_avg$Primer !="PP2A",]
@@ -237,7 +246,7 @@ geom_errorbar(position = position_dodge(width = 0.9),
     ## Warning: ggrepel: 2 unlabeled data points (too many overlaps). Consider
     ## increasing max.overlaps
 
-![](Readme_files/figure-gfm/unnamed-chunk-4-3.png)<!-- -->
+![](Readme_files/figure-gfm/unnamed-chunk-4-4.png)<!-- -->
 
 ``` r
   TuMV_RE_CP <- ggplot(qPCRs_DCt[qPCRs_DCt$Primer.y == "TuMV-CP",], aes(x = Construct, y = log2(RelExpr), fill = Construct , group =  Construct)) +
@@ -252,7 +261,7 @@ ggsave(device = svg, "Results/TuMV_RE_CP.svg", plot = TuMV_RE_CP,  width=10, hei
 TuMV_RE_CP
 ```
 
-![](Readme_files/figure-gfm/unnamed-chunk-4-4.png)<!-- -->
+![](Readme_files/figure-gfm/unnamed-chunk-4-5.png)<!-- -->
 
 ## Delta delta Cq using GFP as reference
 
@@ -296,32 +305,27 @@ ggsave(device = svg, "Results/qPCRs_DDCt_plot.svg", plot = qPCRs_DDCt_plot,  wid
 ggsave(device = svg, "Results/qPCRs_DDCt_others_plot.svg", plot = qPCRs_DDCt_plot_others,  width=10, height=6)
 ```
 
-    ## Warning: ggrepel: 2 unlabeled data points (too many overlaps). Consider
-    ## increasing max.overlaps
+    ## Warning: ggrepel: 2 unlabeled data points (too many overlaps). Consider increasing max.overlaps
+    ## ggrepel: 2 unlabeled data points (too many overlaps). Consider increasing max.overlaps
 
 # Correlation analysis
 
 ``` r
-library("ggstatsplot", quietly = T) 
-```
-
-    ## You can cite this package as:
-    ##      Patil, I. (2021). Visualizations with statistical details: The 'ggstatsplot' approach.
-    ##      Journal of Open Source Software, 6(61), 3167, doi:10.21105/joss.03167
-
-``` r
 GFP_phenotype_expression <-  read.table( "Data/BI1293_GFPperCM_cor.csv", sep = ",", header = T)
- ggplot(data = GFP_phenotype_expression, aes(x = ΔCQ.GFP, y =  GFP.cm2, colour =Construct, fill = Construct)) + geom_point() +  
+ GFP_phenotype_expression_plot <- ggplot(data = GFP_phenotype_expression, aes(x = ΔCQ.GFP, y =  GFP.cm2)) + geom_point() +  
    stat_cor( method = "pearson", digits = 2)+ 
-   theme_classic(base_size = 14) +
+   theme_classic(base_size = 14) + 
+     geom_text_repel(  color ="red",aes(label = Construct)) +
     theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1, size = 10),
             axis.text.y = element_text(size = 10)) 
+ 
+ GFP_phenotype_expression_plot
 ```
 
 ![](Readme_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
 
 ``` r
- #ggstatsplot::ggscatterstats(data = GFP_phenotype_expression, x = ΔCQ.GFP, y = GFP.cm2,  bf.message = F)   +   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+ggsave(device = svg, "Results/GFP_phenotype_expression_plot.svg", plot = GFP_phenotype_expression_plot,  width=10, height=6)
 ```
 
 # References
