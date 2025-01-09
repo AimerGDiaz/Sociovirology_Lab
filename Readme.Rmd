@@ -243,7 +243,7 @@ ggsave(device = svg, "Results/qPCRs_DDCt_others_plot.svg", plot = qPCRs_DDCt_plo
 
 -->
 
-## Which virus prevail in the contest ?
+## Which virus prevailed in the contest ?
 ```{r, warning=FALSE, error=FALSE}
 TuMV_RE_CP <- ggplot(qPCRs_DCt[qPCRs_DCt$Primer.y == "TuMV-CP",], aes(x = Construct, y = log2(RelExpr), fill = Construct , group =  Construct)) +
      geom_bar(position = position_dodge(width = 0.9), stat = 'summary', fun.data = mean_se, alpha = 0.6) +
