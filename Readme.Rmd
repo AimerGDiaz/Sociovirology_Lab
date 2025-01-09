@@ -60,7 +60,7 @@ We will then determine disease symptoms by evaluating at 15 days post-infection 
 
 ## Relative fresh weight 
 
-```{r}
+```{r, warning=FALSE, error=FALSE}
   TuMV_FW <- read.csv("Data/BI1293_FW_Relative.csv", sep = ",", header = T)
   TuMV_FW$Construct <- factor(TuMV_FW$Construct, levels = c("Mock","GFP", "Hcpro","6K2", "HCproX6K2"))
   
@@ -98,7 +98,7 @@ Why is the lab called [Sociovirology](https://www.quantamagazine.org/viruses-fin
 
 ## GFP and Viral titers preliminar analysis 
 
-```{r}
+```{r, warning=FALSE, error=FALSE}
 qPCRs_raw <-  read.table( "Data/Nb_TuMV_GFP_CP_6K2.csv", sep = ",", header = T)
 qPCRs_fil <- qPCRs_raw[qPCRs_raw$Cq != "N/A",] 
 qPCRs_fil$Cq <- as.numeric(qPCRs_fil$Cq)
@@ -121,9 +121,10 @@ geom_errorbar(position = position_dodge(width = 0.9),
    theme(axis.text.x = element_text(angle = 90,size = 14)) 
  TuMV_titters
 ```
+
 ## Lab practice 2024: GFP and Viral titers 
 
-```{r}
+```{r, warning=FALSE, error=FALSE}
 qPCRs_raw <-  read.table( "Data/All_Results.csv", sep = "\t", header = T)
   
 qPCRs_fil_avg <- ddply(qPCRs_raw, .(Primer, Construct,Sample_Group), summarize, Avg_Ct = mean(CQ), Sd_Ct = sd(CQ)  )
@@ -200,8 +201,9 @@ ggsave(device = svg, "Results/TuMV_RE_CP.svg", plot = TuMV_RE_CP,  width=10, hei
 TuMV_RE_CP
 ```
 
+<!--
 ## Delta delta Cq using GFP as reference
-```{r}
+```{r, warning=FALSE, error=FALSE}
 
  qPCRs_DCt_Ctrl <-  ddply(qPCRs_DCt[qPCRs_DCt$Primer.y == "GFP",], .(Sample_Group,Primer.y), summarize, Avg_DCt = mean(DCt) )
 qPCRs_DDCt <-  merge(qPCRs_DCt, qPCRs_DCt_Ctrl,  by = c( "Sample_Group"))
@@ -239,16 +241,44 @@ ggsave(device = svg, "Results/qPCRs_DDCt_others_plot.svg", plot = qPCRs_DDCt_plo
 
 ```
 
+-->
+
+## Which virus prevail in the contest ?
+```{r, warning=FALSE, error=FALSE}
+TuMV_RE_CP <- ggplot(qPCRs_DCt[qPCRs_DCt$Primer.y == "TuMV-CP",], aes(x = Construct, y = log2(RelExpr), fill = Construct , group =  Construct)) +
+     geom_bar(position = position_dodge(width = 0.9), stat = 'summary', fun.data = mean_se, alpha = 0.6) +
+geom_errorbar(position = position_dodge(width = 0.9),
+                stat = 'summary', fun.data = mean_se, width = 0.4) + facet_wrap(~ Primer.y , scales = "free")  +    ylab("Log2 Relative expression to PP2A")   +  xlab("Plant agroinfiltrated") +
+   geom_point(position = position_dodge(width = 0.9), alpha = 0.5, size = 0.8, color = "grey20" ) + theme_classic(base_size = 14) +
+   theme(axis.text.x = element_text(angle = 90,size = 14), legend.title = element_blank(),legend.position = "none") 
+
+comparisons <- list(
+c("GFP","HCPro"),
+c("HCPro", "6K2xDHC"),
+c( "HCPro", "6K2"),
+c("6K2", "6K2xDHC"))
+
+  qPCRs_DCt_sig_plot <- TuMV_RE_CP +   stat_compare_means(comparisons = comparisons,  method = "t.test", label = "p.signif")
+qPCRs_DCt_sig_plot
+
+ggsave(device = svg, "Results/TuMV_RE_CP_Sig.svg", plot = qPCRs_DCt_sig_plot,  width=10, height=6)
+```
+
+
 # Correlation analysis 
 
 ```{r}
 library("ggstatsplot", quietly = T) 
 GFP_phenotype_expression <-  read.table( "Data/BI1293_GFPperCM_cor.csv", sep = ",", header = T)
- ggplot(data = GFP_phenotype_expression, aes(x = ΔCQ.GFP, y =  GFP.cm2, colour =Construct, fill = Construct)) + geom_point() +  
+ Cor_plot <- ggplot(data = GFP_phenotype_expression, aes(x = ΔCQ.GFP, y =  AreaGFP.cm2.)) + geom_point() +  
    stat_cor( method = "pearson", digits = 2)+ 
+   geom_text_repel( color ="red",
+             aes(label = Construct,  hjust = -0.05, vjust = -0.05)) +
    theme_classic(base_size = 14) +
     theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1, size = 10),
             axis.text.y = element_text(size = 10)) 
+ 
+ Cor_plot
  #ggstatsplot::ggscatterstats(data = GFP_phenotype_expression, x = ΔCQ.GFP, y = GFP.cm2,  bf.message = F)   +   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 ```
 
