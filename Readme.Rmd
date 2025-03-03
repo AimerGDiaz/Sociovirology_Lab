@@ -31,8 +31,6 @@ mgsub <- function(pattern, replacement, x, ...) {
 
 # Introduction
 
-Why is the lab called [Sociovirology](https://www.quantamagazine.org/viruses-finally-reveal-their-complex-social-life-20240411/) ?
-
 Plant viruses occur globally and have a profound impact on plant evolution, population structure, and agricultural practices. As obligate biotrophs, these intracellular nanorganisms depend entirely on their host's survival to complete their replication cycle, propagate, and disperse. In response, plants have evolved an array of defenses to counteract viral infection, often leading to a trade-off between growth and defense. This trade-off is central to plant-virus interactions, as mounting a defense response frequently comes at the cost of reduced growth and reproduction @karasov2017mechanisms. Understanding how plants prioritize growth or defense in viral infection context is essential to developing effective crop protection methods, making it a pressing issue in agricultural research.
 
 In this laboratory practice, we will investigate how variations in viral genetics lead to a differential impact on plant growth and defense trade-off using the compatible *Nicotiana benthamiana* / *Turnip Mosaic Virus* pathosystem.
@@ -62,7 +60,7 @@ We will then determine disease symptoms by evaluating at 15 days post-infection 
 
 ## Relative fresh weight 
 
-```{r}
+```{r, warning=FALSE, error=FALSE}
   TuMV_FW <- read.csv("Data/BI1293_FW_Relative.csv", sep = ",", header = T)
   TuMV_FW$Construct <- factor(TuMV_FW$Construct, levels = c("Mock","GFP", "Hcpro","6K2", "HCproX6K2"))
   
@@ -96,10 +94,11 @@ TuMV_FW_plot_sig
 
 ggsave(device = svg, "Results/FreshWeight_TuMV.svg", plot = TuMV_FW_plot_sig,  width=8, height=6)
 ```
+Why is the lab called [Sociovirology](https://www.quantamagazine.org/viruses-finally-reveal-their-complex-social-life-20240411/) ?
 
 ## GFP and Viral titers preliminar analysis 
 
-```{r}
+```{r, warning=FALSE, error=FALSE}
 qPCRs_raw <-  read.table( "Data/Nb_TuMV_GFP_CP_6K2.csv", sep = ",", header = T)
 qPCRs_fil <- qPCRs_raw[qPCRs_raw$Cq != "N/A",] 
 qPCRs_fil$Cq <- as.numeric(qPCRs_fil$Cq)
@@ -125,9 +124,7 @@ geom_errorbar(position = position_dodge(width = 0.9),
 
 ## Lab practice 2024: GFP and Viral titers 
 
-## Delta Cq or PP2A relative expression 
-
-```{r}
+```{r, warning=FALSE, error=FALSE}
 qPCRs_raw <-  read.table( "Data/All_Results.csv", sep = "\t", header = T)
   
 qPCRs_fil_avg <- ddply(qPCRs_raw, .(Primer, Construct,Sample_Group), summarize, Avg_Ct = mean(CQ), Sd_Ct = sd(CQ)  )
@@ -145,8 +142,7 @@ PP2A_CQ
 ggsave(device = svg, "Results/PP2A_CQ.svg", plot = PP2A_CQ,  width=10, height=6)
 qPCRs_avg_sd_fil <- qPCRs_avg_sd[!grepl("6K2_ERV|HX6_FEM|HX6_5",qPCRs_avg_sd$Sample_Group),]
 qPCRs_PP2A_fil <- qPCRs_avg_sd_fil[qPCRs_avg_sd_fil$Primer =="PP2A",]
-
-PP2A_CQ_fil <-ggplot(qPCRs_PP2A_fil, aes(x = Sample_Group, y = CQ, fill = Construct , group =  Construct)) +
+PP2A_CQ_fil <-ggplot(qPCRs_PP2A_fil, aes(x = Sample_Group, y = Avg_Ct, fill = Construct , group =  Construct)) +
      geom_bar(position = position_dodge(width = 0.9), stat = 'summary', fun.data = mean_se, alpha = 0.6) +
 geom_errorbar(position = position_dodge(width = 0.9),
                 stat = 'summary', fun.data = mean_se, width = 0.4) + facet_wrap(~ Construct , scales = "free") + geom_point(position = position_dodge(width = 0.9), alpha = 0.5, size = 0.8, color = "grey20" ) + theme_classic(base_size = 14) 
@@ -155,16 +151,15 @@ ggsave(device = svg, "Results/PP2A_CQ_fil.svg", plot = PP2A_CQ_fil,  width=10, h
 
 qPCRs_Target <- qPCRs_avg_sd_fil[qPCRs_avg_sd_fil$Primer !="PP2A",]
 
-qPCRs_Target_CQ<- ggplot(qPCRs_Target, aes(x = Sample_Group, y = CQ, fill = Construct , group =  Construct)) +
+qPCRs_Target_CQ<- ggplot(qPCRs_Target, aes(x = Sample_Group, y = Avg_Ct, fill = Construct , group =  Construct)) +
      geom_bar(position = position_dodge(width = 0.9), stat = 'summary', fun.data = mean_se, alpha = 0.6) +
 geom_errorbar(position = position_dodge(width = 0.9),
-                stat = 'summary', fun.data = mean_se, width = 0.4) + facet_wrap(~ Primer , scales = "free") + 
- theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1, size = 10))
+                stat = 'summary', fun.data = mean_se, width = 0.4) + facet_wrap(~ Construct , scales = "free") 
   ggsave(device = svg, "Results/qPCRs_Target_CQ.svg", plot = qPCRs_Target_CQ,  width=10, height=6)
-qPCRs_Target_CQ
 
 qPCRs_fil_avg <- qPCRs_fil_avg[!grepl("6K2_ERV|HX6_FEM|HX6_5",qPCRs_fil_avg$Sample_Group),]
 write.csv(qPCRs_fil_avg, "Results/qPCRs_avg_sd_filtered.csv")
+
 
 qPCRs_fil_PP2A <- qPCRs_fil_avg[qPCRs_fil_avg$Primer =="PP2A",]
 qPCRs_fil_Target <-  qPCRs_fil_avg[qPCRs_fil_avg$Primer !="PP2A",]
@@ -206,8 +201,9 @@ ggsave(device = svg, "Results/TuMV_RE_CP.svg", plot = TuMV_RE_CP,  width=10, hei
 TuMV_RE_CP
 ```
 
+<!--
 ## Delta delta Cq using GFP as reference
-```{r}
+```{r, warning=FALSE, error=FALSE}
 
  qPCRs_DCt_Ctrl <-  ddply(qPCRs_DCt[qPCRs_DCt$Primer.y == "GFP",], .(Sample_Group,Primer.y), summarize, Avg_DCt = mean(DCt) )
 qPCRs_DDCt <-  merge(qPCRs_DCt, qPCRs_DCt_Ctrl,  by = c( "Sample_Group"))
@@ -245,20 +241,45 @@ ggsave(device = svg, "Results/qPCRs_DDCt_others_plot.svg", plot = qPCRs_DDCt_plo
 
 ```
 
+-->
+
+## Which virus prevailed in the contest ?
+```{r, warning=FALSE, error=FALSE}
+TuMV_RE_CP <- ggplot(qPCRs_DCt[qPCRs_DCt$Primer.y == "TuMV-CP",], aes(x = Construct, y = log2(RelExpr), fill = Construct , group =  Construct)) +
+     geom_bar(position = position_dodge(width = 0.9), stat = 'summary', fun.data = mean_se, alpha = 0.6) +
+geom_errorbar(position = position_dodge(width = 0.9),
+                stat = 'summary', fun.data = mean_se, width = 0.4) + facet_wrap(~ Primer.y , scales = "free")  +    ylab("Log2 Relative expression to PP2A")   +  xlab("Plant agroinfiltrated") +
+   geom_point(position = position_dodge(width = 0.9), alpha = 0.5, size = 0.8, color = "grey20" ) + theme_classic(base_size = 14) +
+   theme(axis.text.x = element_text(angle = 90,size = 14), legend.title = element_blank(),legend.position = "none") 
+
+comparisons <- list(
+c("GFP","HCPro"),
+c("HCPro", "6K2xDHC"),
+c( "HCPro", "6K2"),
+c("6K2", "6K2xDHC"))
+
+  qPCRs_DCt_sig_plot <- TuMV_RE_CP +   stat_compare_means(comparisons = comparisons,  method = "t.test", label = "p.signif")
+qPCRs_DCt_sig_plot
+
+ggsave(device = svg, "Results/TuMV_RE_CP_Sig.svg", plot = qPCRs_DCt_sig_plot,  width=10, height=6)
+```
+
+
 # Correlation analysis 
 
 ```{r}
+library("ggstatsplot", quietly = T) 
 GFP_phenotype_expression <-  read.table( "Data/BI1293_GFPperCM_cor.csv", sep = ",", header = T)
- GFP_phenotype_expression_plot <- ggplot(data = GFP_phenotype_expression, aes(x = ΔCQ.GFP, y =  GFP.cm2)) + geom_point() +  
+ Cor_plot <- ggplot(data = GFP_phenotype_expression, aes(x = ΔCQ.GFP, y =  AreaGFP.cm2.)) + geom_point() +  
    stat_cor( method = "pearson", digits = 2)+ 
-   theme_classic(base_size = 14) + 
-     geom_text_repel(  color ="red",aes(label = Construct)) +
+   geom_text_repel( color ="red",
+             aes(label = Construct,  hjust = -0.05, vjust = -0.05)) +
+   theme_classic(base_size = 14) +
     theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1, size = 10),
             axis.text.y = element_text(size = 10)) 
  
- GFP_phenotype_expression_plot
-ggsave(device = svg, "Results/GFP_phenotype_expression_plot.svg", plot = GFP_phenotype_expression_plot,  width=10, height=6)
-
+ Cor_plot
+ #ggstatsplot::ggscatterstats(data = GFP_phenotype_expression, x = ΔCQ.GFP, y = GFP.cm2,  bf.message = F)   +   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 ```
 
 # References

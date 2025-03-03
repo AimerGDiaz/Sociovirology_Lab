@@ -153,8 +153,9 @@ geom_errorbar(position = position_dodge(width = 0.9),
  TuMV_titters
 ```
 
-![](Readme_files/figure-gfm/unnamed-chunk-3-1.png)<!-- --> \## Lab
-practice 2024: GFP and Viral titers
+![](Readme_files/figure-gfm/unnamed-chunk-3-1.png)<!-- -->
+
+## Lab practice 2024: GFP and Viral titers
 
 ``` r
 qPCRs_raw <-  read.table( "Data/All_Results.csv", sep = "\t", header = T)
@@ -231,12 +232,6 @@ geom_errorbar(position = position_dodge(width = 0.9),
   TuMV_RE_NoCP
 ```
 
-    ## Warning: ggrepel: 3 unlabeled data points (too many overlaps). Consider
-    ## increasing max.overlaps
-
-    ## Warning: ggrepel: 2 unlabeled data points (too many overlaps). Consider
-    ## increasing max.overlaps
-
 ![](Readme_files/figure-gfm/unnamed-chunk-4-3.png)<!-- -->
 
 ``` r
@@ -254,18 +249,16 @@ TuMV_RE_CP
 
 ![](Readme_files/figure-gfm/unnamed-chunk-4-4.png)<!-- -->
 
+<!--
 ## Delta delta Cq using GFP as reference
-
-``` r
+&#10;```r
  qPCRs_DCt_Ctrl <-  ddply(qPCRs_DCt[qPCRs_DCt$Primer.y == "GFP",], .(Sample_Group,Primer.y), summarize, Avg_DCt = mean(DCt) )
 qPCRs_DDCt <-  merge(qPCRs_DCt, qPCRs_DCt_Ctrl,  by = c( "Sample_Group"))
 qPCRs_DDCt$log2DDCt <- 2^-(qPCRs_DDCt$DCt -qPCRs_DDCt$Avg_DCt)
 #factor(qPCRs_DDCt$Sample_Group )
 #  ggplot(qPCRs_DDCt[qPCRs_DDCt$Sample_Group != "6K2_5" & qPCRs_DDCt$Sample_Group != "6K2_4",], 
-
-#ggplot(qPCRs_DDCt[!grepl("TA", qPCRs_DDCt$Sample_Group ),], 
-       
-#ggplot(qPCRs_DDCt[grepl("_TA", qPCRs_DDCt$Sample_Group ),], 
+&#10;#ggplot(qPCRs_DDCt[!grepl("TA", qPCRs_DDCt$Sample_Group ),], 
+       &#10;#ggplot(qPCRs_DDCt[grepl("_TA", qPCRs_DDCt$Sample_Group ),], 
 qPCRs_DDCt_plot <- ggplot(qPCRs_DDCt[qPCRs_DDCt$Primer.y.x == "TuMV-CP",],       aes(x = Construct, y =log2(log2DDCt), fill = Construct , group =  Construct)) +
      geom_bar(position = position_dodge(width = 0.9), stat = 'summary', fun.data = mean_se, alpha = 0.6) +
 geom_errorbar(position = position_dodge(width = 0.9),
@@ -275,8 +268,7 @@ geom_errorbar(position = position_dodge(width = 0.9),
              aes(label = Sample_Group,  hjust = -0.05, vjust = -0.05)) +
    geom_point(position = position_dodge(width = 0.9), alpha = 0.5, size = 0.8, color = "grey20" ) + theme_classic(base_size = 14) +
    theme(axis.text.x = element_text(angle = 90,size = 14)) 
-
-
+&#10;
 qPCRs_DDCt_plot_others <- ggplot(qPCRs_DDCt[qPCRs_DDCt$Primer.y.x != "TuMV-CP",],       aes(x = Construct, y =log2DDCt, fill = Construct , group =  Construct)) +
      geom_bar(position = position_dodge(width = 0.9), stat = 'summary', fun.data = mean_se, alpha = 0.6) +
 geom_errorbar(position = position_dodge(width = 0.9),
@@ -288,16 +280,40 @@ geom_errorbar(position = position_dodge(width = 0.9),
    theme(axis.text.x = element_text(angle = 90,size = 14)) 
 qPCRs_DDCt_plot
 ```
-
-![](Readme_files/figure-gfm/unnamed-chunk-5-1.png)<!-- -->
+&#10;![](Readme_files/figure-gfm/unnamed-chunk-5-1.png)<!-- -->
 
 ``` r
 ggsave(device = svg, "Results/qPCRs_DDCt_plot.svg", plot = qPCRs_DDCt_plot,  width=10, height=6)
 ggsave(device = svg, "Results/qPCRs_DDCt_others_plot.svg", plot = qPCRs_DDCt_plot_others,  width=10, height=6)
 ```
 
-    ## Warning: ggrepel: 2 unlabeled data points (too many overlaps). Consider
-    ## increasing max.overlaps
+–\>
+
+## Which virus prevailed in the contest ?
+
+``` r
+TuMV_RE_CP <- ggplot(qPCRs_DCt[qPCRs_DCt$Primer.y == "TuMV-CP",], aes(x = Construct, y = log2(RelExpr), fill = Construct , group =  Construct)) +
+     geom_bar(position = position_dodge(width = 0.9), stat = 'summary', fun.data = mean_se, alpha = 0.6) +
+geom_errorbar(position = position_dodge(width = 0.9),
+                stat = 'summary', fun.data = mean_se, width = 0.4) + facet_wrap(~ Primer.y , scales = "free")  +    ylab("Log2 Relative expression to PP2A")   +  xlab("Plant agroinfiltrated") +
+   geom_point(position = position_dodge(width = 0.9), alpha = 0.5, size = 0.8, color = "grey20" ) + theme_classic(base_size = 14) +
+   theme(axis.text.x = element_text(angle = 90,size = 14), legend.title = element_blank(),legend.position = "none") 
+
+comparisons <- list(
+c("GFP","HCPro"),
+c("HCPro", "6K2xDHC"),
+c( "HCPro", "6K2"),
+c("6K2", "6K2xDHC"))
+
+  qPCRs_DCt_sig_plot <- TuMV_RE_CP +   stat_compare_means(comparisons = comparisons,  method = "t.test", label = "p.signif")
+qPCRs_DCt_sig_plot
+```
+
+![](Readme_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
+
+``` r
+ggsave(device = svg, "Results/TuMV_RE_CP_Sig.svg", plot = qPCRs_DCt_sig_plot,  width=10, height=6)
+```
 
 # Correlation analysis
 
@@ -311,14 +327,18 @@ library("ggstatsplot", quietly = T)
 
 ``` r
 GFP_phenotype_expression <-  read.table( "Data/BI1293_GFPperCM_cor.csv", sep = ",", header = T)
- ggplot(data = GFP_phenotype_expression, aes(x = ΔCQ.GFP, y =  GFP.cm2, colour =Construct, fill = Construct)) + geom_point() +  
+ Cor_plot <- ggplot(data = GFP_phenotype_expression, aes(x = ΔCQ.GFP, y =  AreaGFP.cm2.)) + geom_point() +  
    stat_cor( method = "pearson", digits = 2)+ 
+   geom_text_repel( color ="red",
+             aes(label = Construct,  hjust = -0.05, vjust = -0.05)) +
    theme_classic(base_size = 14) +
     theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1, size = 10),
             axis.text.y = element_text(size = 10)) 
+ 
+ Cor_plot
 ```
 
-![](Readme_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
+![](Readme_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
 
 ``` r
  #ggstatsplot::ggscatterstats(data = GFP_phenotype_expression, x = ΔCQ.GFP, y = GFP.cm2,  bf.message = F)   +   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
